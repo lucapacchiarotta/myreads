@@ -10,10 +10,6 @@ class Bookshelf extends Component {
         onChange: PropTypes.func.isRequired
     }
 
-    state = {
-    }
-
-
     render() {
         const {title, books, onChange} = this.props
 
@@ -24,8 +20,7 @@ class Bookshelf extends Component {
                 <ol className="books-grid">
                     {books.map((book) => (
                         <li key={book.title}>
-                            <Book title={book.title} authors={book.authors} images={book.imageLinks} bookshelf={book.shelf}
-                                onChange={(newBookshelf) => onChange(book, newBookshelf)}/>
+                            <Book data={book} onChange={(newBookshelf) => onChange(book, newBookshelf)}/>
                         </li>
                     ))}
                 </ol>

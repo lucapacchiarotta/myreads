@@ -1,35 +1,34 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types'
 
-//import serializeForm from 'form-serialize'
-
-
 class Book extends Component {
     static propTypes = {
-        title: PropTypes.string.isRequired,
-        authors: PropTypes.array.isRequired,
-        images: PropTypes.object.isRequired,
-        bookshelf: PropTypes.string.isRequired,
+        data: PropTypes.object,
         onChange: PropTypes.func.isRequired
     }
 
     handleChange = (event) => {
         if (this.props.onChange) {
             this.props.onChange(event.target.value)
+            this.props.data.shelf = event.target.value
         }
       }
 
     render() {
-        const {title, authors, images, bookshelf} = this.props
+        const {data} = this.props
+        if (data.shelf === '' || data.shelf === undefined) {
+            data.shelf = 'none';
+        }
+        let thumb = (data.imageLinks && data.imageLinks.smallThumbnail) ? data.imageLinks.smallThumbnail : ''
         
         return (
             <form>
                 <div className="book">
                     <div className="book-top">
-                        <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url("${images.smallThumbnail} + '")` }}></div>
+                        <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url("${thumb}")` }}></div>
                         <div className="book-shelf-changer">
-                            <select value={bookshelf} onChange={(event) => this.handleChange(event)}>
-                                <option value="none" disabled>Move to...</option>
+                            <select value={data.shelf} onChange={(event) => this.handleChange(event)}>
+                                <option value="moveTo" disabled>Move to...</option>
                                 <option value="currentlyReading">Currently Reading</option>
                                 <option value="wantToRead">Want to Read</option>
                                 <option value="read">Read</option>
@@ -37,9 +36,9 @@ class Book extends Component {
                             </select>
                         </div>
                     </div>
-                    <div className="book-title">{title}</div>
+                    <div className="book-title">{data.title}</div>
                     <div className="book-authors">
-                        {authors.map((author) => author)}
+                        {data.authors && data.authors.map((author) => author)}
                     </div>
                 </div>
             </form>

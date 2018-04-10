@@ -3,6 +3,9 @@ import { Route, Link } from 'react-router-dom'
 import * as BooksAPI from './BooksAPI'
 import './App.css'
 import Bookshelf from './Bookshelf'
+import Search from './Search'
+import escapeRegExp from 'escape-string-regexp'
+import sortBy from 'sort-by'
 
 class BooksApp extends React.Component {
     state = {
@@ -11,10 +14,14 @@ class BooksApp extends React.Component {
         // Books list for wanted to read bookshelf
         booksWanted: [],
         // Books list for read bookshelf
-        booksRead: []
+        booksRead: [],
+        // Books list of searched items
+        booksSearched: [],
+        // QUery for search function
+        query: ''
     }
 
-    componentDidMount() {
+    refreshData() {
         // Reading bookshelf
         BooksAPI.getAll().then( data => {
             let booksReading
@@ -47,18 +54,49 @@ class BooksApp extends React.Component {
                 booksRead: booksRead
             });
         })
+    }
 
-        /*
-        BooksAPI.getAll().then( data => {
-            console.log(data)
-        })
-        */
+    componentDidMount() {
+        this.refreshData()
     }
 
     onChange(book, newBookshelf) {
-        //alert('Ciao ' + book.title + ' Shelf: ' + newBookshelf)
-        console.log('Ciao ' + book.title + ' Shelf ' + newBookshelf)
-        //BooksAPI.update(book, )
+        BooksAPI.update(book, newBookshelf).then(data => {
+            this.refreshData()
+        })
+    }
+
+    bookSearch(event) {
+        let booksList = []
+        let query = event.target.value.trim()
+
+        this.setState({
+            booksSearched: booksList,
+            query: query
+        })
+
+        console.log("Query: " + query)
+        console.log("state.query: " + this.state.query)
+        if (query !== '') {
+            BooksAPI.search(query).then((data) => {
+                if (data.error) {
+                    console.log("No result found")
+                } else {
+                    if (data.length > 0) {
+                        const exp = escapeRegExp(query)
+                        const match = new RegExp(exp, 'i')
+                        booksList = data.filter((book) =>
+                            match.test(book.title) || match.test(book.authors.join(','))
+                        )
+                        booksList.sort(sortBy('title'))
+                        this.setState({
+                            booksSearched: booksList
+                        })
+                        
+                    }
+                }
+            })
+        }
     }
 
     render() {
@@ -67,45 +105,30 @@ class BooksApp extends React.Component {
 
                 <Route exact path='/' render={() => (
                     <div className="list-books">
-                        <div className="list-books-title">
-                            <h1>MyReads</h1>
-                        </div>
-                        <div className="list-books-content">
-                            <div>
-                                <Bookshelf title="Currently Reading" books={this.state.booksReading} onChange={
-                                    (book, newBookshelf) => this.onChange(book, newBookshelf)} />
-                                <Bookshelf title="Want to Read" books={this.state.booksWanted} onChange={
-                                    (book, newBookshelf) => this.onChange(book, newBookshelf)} />
-                                <Bookshelf title="Read" books={this.state.booksRead} onChange={
-                                    (book, newBookshelf) => this.onChange(book, newBookshelf)} />
-                            </div>
-                        </div>
-                        <div className="open-search">
-                            <Link to="/search">Add a book</Link>
+                    <div className="list-books-title">
+                        <h1>MyReads</h1>
+                    </div>
+                    <div className="list-books-content">
+                        <div>
+                            <Bookshelf title="Currently Reading" books={this.state.booksReading} onChange={
+                                (book, newBookshelf) => this.onChange(book, newBookshelf)} />
+                            <Bookshelf title="Want to Read" books={this.state.booksWanted} onChange={
+                                (book, newBookshelf) => this.onChange(book, newBookshelf)} />
+                            <Bookshelf title="Read" books={this.state.booksRead} onChange={
+                                (book, newBookshelf) => this.onChange(book, newBookshelf)} />
                         </div>
                     </div>
+                    <div className="open-search">
+                        <Link to="/search">Add a book</Link>
+                    </div>
+                </div>
                 )} />
 
                 <Route exact path='/search' render={({ history }) => (
-                    <div className="search-books">
-                        <div className="search-books-bar">
-                            <Link className="close-search" to="/">Close</Link>
-                            <div className="search-books-input-wrapper">
-                                {/*
-                                NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                                You can find these search terms here:
-                                https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                                However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                                you don't find a specific author or title. Every search is limited by search terms.
-                                */}
-                                <input type="text" placeholder="Search by title or author"/>
-                            </div>
-                        </div>
-                        <div className="search-books-results">
-                            <ol className="books-grid"></ol>
-                        </div>
-                    </div>
+                    <Search bookList={this.state.booksSearched} 
+                        bookSearch={(event) => this.bookSearch(event)}
+                        onChange={(book, newBookshelf) => this.onChange(book, newBookshelf)} 
+                        query={this.state.query} />
                 )} />
 
             </div>
