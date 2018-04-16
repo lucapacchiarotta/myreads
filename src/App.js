@@ -1,11 +1,12 @@
 import React from 'react'
 import { Route, Link } from 'react-router-dom'
-import * as BooksAPI from './BooksAPI'
-import './App.css'
-import Bookshelf from './Bookshelf'
-import Search from './Search'
 import escapeRegExp from 'escape-string-regexp'
 import sortBy from 'sort-by'
+import * as BooksAPI from './BooksAPI'
+import Bookshelf from './Bookshelf'
+import Search from './Search'
+import './App.css'
+
 
 class BooksApp extends React.Component {
     state = {
@@ -71,12 +72,10 @@ class BooksApp extends React.Component {
         let query = event.target.value.trim()
 
         this.setState({
-            booksSearched: booksList,
-            query: query
+            query: query,
+            booksSearched: booksList
         })
 
-        console.log("Query: " + query)
-        console.log("state.query: " + this.state.query)
         if (query !== '') {
             BooksAPI.search(query).then((data) => {
                 if (data.error) {
@@ -85,16 +84,41 @@ class BooksApp extends React.Component {
                     if (data.length > 0) {
                         const exp = escapeRegExp(query)
                         const match = new RegExp(exp, 'i')
+                        
                         booksList = data.filter((book) =>
                             match.test(book.title) || match.test(book.authors.join(','))
                         )
                         booksList.sort(sortBy('title'))
-                        this.setState({
-                            booksSearched: booksList
-                        })
-                        
+
+                        if (this.state.booksReading.length > 0 && this.state.booksReading.forEach(element => {
+                            booksList.forEach(elementList => {
+                                if (elementList.id === element.id) {
+                                    elementList.shelf = 'currentlyReading'
+                                }
+                            })
+                        }));
+
+                        if (this.state.booksWanted.length > 0 && this.state.booksWanted.forEach(element => {
+                            booksList.forEach(elementList => {
+                                if (elementList.id === element.id) {
+                                    elementList.shelf = 'wantToRead'
+                                }
+                            })
+                        }));
+
+                        if (this.state.booksRead.length > 0 && this.state.booksRead.forEach(element => {
+                            booksList.forEach(elementList => {
+                                if (elementList.id === element.id) {
+                                    elementList.shelf = 'read'
+                                }
+                            })
+                        })); // Without semicolon I have a sintax error
                     }
                 }
+
+                this.setState({
+                    booksSearched: booksList
+                })
             })
         }
     }

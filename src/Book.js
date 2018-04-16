@@ -19,7 +19,7 @@ class Book extends Component {
         if (data.shelf === '' || data.shelf === undefined) {
             data.shelf = 'none';
         }
-        let thumb = (data.imageLinks && data.imageLinks.smallThumbnail) ? data.imageLinks.smallThumbnail : ''
+        let thumb = (data.imageLinks && data.imageLinks.smallThumbnail) ? data.imageLinks.smallThumbnail : 'nocover.png'
         
         return (
             <form>
