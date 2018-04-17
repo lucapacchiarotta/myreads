@@ -9,11 +9,16 @@ class Search extends Component {
         bookList: PropTypes.array,
         bookSearch: PropTypes.func.isRequired,
         onChange: PropTypes.func.isRequired,
+        searchDataReceived: PropTypes.bool.isRequired,
         query: PropTypes.string
     }
 
     render() {
-        const {bookList, bookSearch, onChange, query} = this.props
+        const {bookList, bookSearch, onChange, query, searchDataReceived} = this.props
+        let noData = ''
+        if (searchDataReceived && bookList.length === 0 && query.trim() !== '') {
+            noData = 'No data found'
+        }
         
         return (
             <div className="search-books">
@@ -22,6 +27,9 @@ class Search extends Component {
                     <div className="search-books-input-wrapper">
                         <TextSearch placeholder="Search by title or author" onChange={(event) => bookSearch(event)} query={query} />
                     </div>
+                </div>
+                <div className="search-books-mex">
+                    {noData}
                 </div>
                 <div className="search-books-results">
                     <ol className="books-grid">

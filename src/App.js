@@ -18,15 +18,17 @@ class BooksApp extends React.Component {
         booksRead: [],
         // Books list of searched items
         booksSearched: [],
-        // QUery for search function
+        // Inform the search component that we have received or not the data
+        searchDataReceived: false,
+        // Query for search function
         query: ''
     }
 
     refreshData() {
         // Reading bookshelf
-        BooksAPI.getAll().then( data => {
+        BooksAPI.getAll().then((data) => {
             let booksReading
-            booksReading = data.filter( (book) =>
+            booksReading = data.filter((book) =>
                 book.shelf === "currentlyReading"
             );
             this.setState({
@@ -35,7 +37,7 @@ class BooksApp extends React.Component {
         })
 
         // Want to read bookshelf
-        BooksAPI.getAll().then(data => {
+        BooksAPI.getAll().then((data) => {
             let booksWanted
             booksWanted = data.filter((book) =>
                 book.shelf === "wantToRead"
@@ -46,7 +48,7 @@ class BooksApp extends React.Component {
         })
 
         // Read bookshelf
-        BooksAPI.getAll().then(data => {
+        BooksAPI.getAll().then((data) => {
             let booksRead
             booksRead = data.filter((book) =>
                 book.shelf === "read"
@@ -62,7 +64,7 @@ class BooksApp extends React.Component {
     }
 
     onChange(book, newBookshelf) {
-        BooksAPI.update(book, newBookshelf).then(data => {
+        BooksAPI.update(book, newBookshelf).then((data) => {
             this.refreshData()
         })
     }
@@ -73,7 +75,8 @@ class BooksApp extends React.Component {
 
         this.setState({
             query: query,
-            booksSearched: booksList
+            booksSearched: booksList,
+            searchDataReceived: false
         })
 
         if (query !== '') {
@@ -90,34 +93,32 @@ class BooksApp extends React.Component {
                         )
                         booksList.sort(sortBy('title'))
 
-                        if (this.state.booksReading.length > 0 && this.state.booksReading.forEach(element => {
-                            booksList.forEach(elementList => {
-                                if (elementList.id === element.id) {
-                                    elementList.shelf = 'currentlyReading'
-                                }
-                            })
-                        }));
+                        if (this.state.booksReading.length > 0 && 
+                            this.state.booksReading.map((element) => 
+                                booksList.map((elementList) => 
+                                    elementList.shelf = elementList.id === element.id ? 'currentlyReading' : elementList.shelf
+                                )
+                        ))
 
-                        if (this.state.booksWanted.length > 0 && this.state.booksWanted.forEach(element => {
-                            booksList.forEach(elementList => {
-                                if (elementList.id === element.id) {
-                                    elementList.shelf = 'wantToRead'
-                                }
-                            })
-                        }));
+                        if (this.state.booksWanted.length > 0 && 
+                            this.state.booksWanted.map((element) => 
+                                booksList.map((elementList) => 
+                                    elementList.shelf = elementList.id === element.id ? 'wantToRead' : elementList.shelf
+                                )
+                        ))
 
-                        if (this.state.booksRead.length > 0 && this.state.booksRead.forEach(element => {
-                            booksList.forEach(elementList => {
-                                if (elementList.id === element.id) {
-                                    elementList.shelf = 'read'
-                                }
-                            })
-                        })); // Without semicolon I have a sintax error
+                        if (this.state.booksRead.length > 0 && 
+                            this.state.booksRead.map((element) => 
+                                booksList.map((elementList) => 
+                                    elementList.shelf = elementList.id === element.id ? 'read' : elementList.shelf
+                            )
+                        )); // Without semicolon I have a sintax error
                     }
                 }
 
                 this.setState({
-                    booksSearched: booksList
+                    booksSearched: booksList,
+                    searchDataReceived: true
                 })
             })
         }
@@ -152,7 +153,8 @@ class BooksApp extends React.Component {
                     <Search bookList={this.state.booksSearched} 
                         bookSearch={(event) => this.bookSearch(event)}
                         onChange={(book, newBookshelf) => this.onChange(book, newBookshelf)} 
-                        query={this.state.query} />
+                        query={this.state.query} 
+                        searchDataReceived={this.state.searchDataReceived}/>
                 )} />
 
             </div>
