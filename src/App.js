@@ -25,33 +25,29 @@ class BooksApp extends React.Component {
     }
 
     refreshData() {
-        // Reading bookshelf
         BooksAPI.getAll().then((data) => {
+            // Reading bookshelf
             let booksReading
             booksReading = data.filter((book) =>
-                book.shelf === "currentlyReading"
+                book.shelf === 'currentlyReading'
             );
             this.setState({
                 booksReading: booksReading
             });
-        })
 
-        // Want to read bookshelf
-        BooksAPI.getAll().then((data) => {
+            // Want to read bookshelf
             let booksWanted
             booksWanted = data.filter((book) =>
-                book.shelf === "wantToRead"
+                book.shelf === 'wantToRead'
             );
             this.setState({
                 booksWanted: booksWanted
             });
-        })
 
-        // Read bookshelf
-        BooksAPI.getAll().then((data) => {
+            // Read bookshelf
             let booksRead
             booksRead = data.filter((book) =>
-                book.shelf === "read"
+                book.shelf === 'read'
             );
             this.setState({
                 booksRead: booksRead
@@ -63,7 +59,25 @@ class BooksApp extends React.Component {
         this.refreshData()
     }
 
-    onChange(book, newBookshelf) {
+    onChange(book, newBookshelf, collection, fromSearch) {
+        // Update for the local state
+        collection.map((bookInList, index) => 
+            bookInList.id === book.id && !fromSearch && collection.splice(index, 1)
+        )
+        
+        newBookshelf === 'currentlyReading' && this.setState((state) => ({
+            booksReading: state.booksReading.concat(book)
+        }))
+
+        newBookshelf === 'wantToRead' && this.setState((state) => ({
+            booksWanted: state.booksWanted.concat(book)
+        }))
+
+        newBookshelf === 'read' && this.setState((state) => ({
+            booksRead: state.booksRead.concat(book)
+        }))
+
+        // Update the data on the server
         BooksAPI.update(book, newBookshelf).then((data) => {
             this.refreshData()
         })
@@ -93,26 +107,23 @@ class BooksApp extends React.Component {
                         )
                         booksList.sort(sortBy('title'))
 
-                        if (this.state.booksReading.length > 0 && 
-                            this.state.booksReading.map((element) => 
-                                booksList.map((elementList) => 
+                        booksList.map((elementList) => {
+                            this.state.booksReading.length > 0 && 
+                                this.state.booksReading.map((element) => 
                                     elementList.shelf = elementList.id === element.id ? 'currentlyReading' : elementList.shelf
-                                )
-                        ))
+                            )
 
-                        if (this.state.booksWanted.length > 0 && 
-                            this.state.booksWanted.map((element) => 
-                                booksList.map((elementList) => 
+                            this.state.booksWanted.length > 0 && 
+                                this.state.booksWanted.map((element) => 
                                     elementList.shelf = elementList.id === element.id ? 'wantToRead' : elementList.shelf
-                                )
-                        ))
+                            )
 
-                        if (this.state.booksRead.length > 0 && 
-                            this.state.booksRead.map((element) => 
-                                booksList.map((elementList) => 
+                            this.state.booksRead.length > 0 && 
+                                this.state.booksRead.map((element) => 
                                     elementList.shelf = elementList.id === element.id ? 'read' : elementList.shelf
                             )
-                        )); // Without semicolon I have a sintax error
+                            return elementList  
+                        })
                     }
                 }
 
@@ -136,11 +147,11 @@ class BooksApp extends React.Component {
                     <div className="list-books-content">
                         <div>
                             <Bookshelf title="Currently Reading" books={this.state.booksReading} onChange={
-                                (book, newBookshelf) => this.onChange(book, newBookshelf)} />
+                                (book, newBookshelf) => this.onChange(book, newBookshelf, this.state.booksReading, false)} />
                             <Bookshelf title="Want to Read" books={this.state.booksWanted} onChange={
-                                (book, newBookshelf) => this.onChange(book, newBookshelf)} />
+                                (book, newBookshelf) => this.onChange(book, newBookshelf, this.state.booksWanted, false)} />
                             <Bookshelf title="Read" books={this.state.booksRead} onChange={
-                                (book, newBookshelf) => this.onChange(book, newBookshelf)} />
+                                (book, newBookshelf) => this.onChange(book, newBookshelf, this.state.booksRead, false)} />
                         </div>
                     </div>
                     <div className="open-search">
@@ -152,7 +163,7 @@ class BooksApp extends React.Component {
                 <Route exact path='/search' render={({ history }) => (
                     <Search bookList={this.state.booksSearched} 
                         bookSearch={(event) => this.bookSearch(event)}
-                        onChange={(book, newBookshelf) => this.onChange(book, newBookshelf)} 
+                        onChange={(book, newBookshelf) => this.onChange(book, newBookshelf, this.state.booksSearched, true)} 
                         query={this.state.query} 
                         searchDataReceived={this.state.searchDataReceived}/>
                 )} />
