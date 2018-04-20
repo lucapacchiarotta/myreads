@@ -26,32 +26,26 @@ class BooksApp extends React.Component {
 
     refreshData() {
         BooksAPI.getAll().then((data) => {
-            // Reading bookshelf
-            let booksReading
+            let booksReading =  []
             booksReading = data.filter((book) =>
                 book.shelf === 'currentlyReading'
-            );
-            this.setState({
-                booksReading: booksReading
-            });
-
-            // Want to read bookshelf
-            let booksWanted
+            )
+            
+            let booksWanted =  []
             booksWanted = data.filter((book) =>
                 book.shelf === 'wantToRead'
-            );
-            this.setState({
-                booksWanted: booksWanted
-            });
-
-            // Read bookshelf
-            let booksRead
+            )
+            
+            let booksRead =  []
             booksRead = data.filter((book) =>
                 book.shelf === 'read'
-            );
+            )
+            
             this.setState({
-                booksRead: booksRead
-            });
+                booksReading,
+                booksWanted,
+                booksRead
+            })
         })
     }
 
